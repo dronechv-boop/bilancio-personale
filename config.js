@@ -12,7 +12,7 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSgmVLQYmOx9aZwVkyp0qzoI6dmjtE46oBZ_NRkr1qRHw2o355Lvhf4-usnVoXy89B/exec";
 const TOKEN_SEGRETO = "biL4nc10-202k-pRivat3";
 
-/ ============================================================
+// ============================================================
 // LOGIN CON GOOGLE
 // ============================================================
 //
