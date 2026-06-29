@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bilancio</title>
+
+<!-- PWA: manifest e icone -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1B3A5C">
+<link rel="apple-touch-icon" href="icona-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bilancio">
+
+<link rel="stylesheet" href="style.css">
+
+<!-- Google Identity Services per il login -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- Chart.js per i grafici, da CDN gratuito -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+     SCHERMATA DI LOGIN
+     ============================================================ -->
+<div class="schermata-login" id="schermata-login">
+  <div class="login-box">
+    <div class="login-icona">€</div>
+    <h1>Bilancio</h1>
+    <p class="login-sottotitolo">Accedi con il tuo account Google per continuare.</p>
+    <div id="bottone-google-signin"></div>
+    <div class="login-errore nascosto" id="messaggio-login-errore"></div>
+  </div>
+</div>
+
+<div class="app nascosto" id="app-contenitore">
+
+  <div id="contenitore-errore" class="lista-vuota nascosto" style="color: var(--spesa);"></div>
+  <div id="spinner-caricamento" class="spinner-caricamento nascosto">Caricamento...</div>
+
+  <!-- ============================================================
+       VISTA MENSILE
+       ============================================================ -->
+  <div class="vista attiva" id="vista-mensile">
+    <div class="header">
+      <h1>Bilancio</h1>
+      <div class="selettore-anno">
+        <select id="select-anno-mensile"></select>
+      </div>
+      <div class="pillole-mese" id="pillole-mese"></div>
+    </div>
+
+    <div class="riepilogo" id="riepilogo-mensile"></div>
+
+    <div class="blocco-grafico">
+      <h3>Spese per categoria</h3>
+      <canvas id="grafico-torta-mensile" width="280" height="280"></canvas>
+      <div class="grafico-vuoto nascosto" id="grafico-torta-mensile-vuoto">Nessuna spesa in questo periodo.</div>
+    </div>
+
+    <button class="btn-nuova-voce" id="btn-nuova-voce">+ Nuova voce</button>
+    <div class="form-voce-contenitore nascosto" id="form-voce-mensile-contenitore"></div>
+
+    <div class="lista-movimenti" id="lista-movimenti-mensile"></div>
+  </div>
+
+  <!-- ============================================================
+       VISTA ANNUALE
+       ============================================================ -->
+  <div class="vista" id="vista-annuale">
+    <div class="header">
+      <h1>Bilancio annuale</h1>
+      <div class="selettore-anno">
+        <select id="select-anno-annuale"></select>
+      </div>
+    </div>
+
+    <div class="riepilogo" id="riepilogo-annuale"></div>
+
+    <div class="blocco-grafico">
+      <h3>Andamento mensile</h3>
+      <canvas id="grafico-barre-annuali" width="280" height="220"></canvas>
+    </div>
+
+    <div class="schede-mensili" id="schede-mensili"></div>
+  </div>
+
+  <!-- Tab bar di navigazione fissa -->
+  <div class="tab-bar">
+    <button class="tab-bar-btn attivo" id="btn-tab-mensile">
+      <span class="icona-tab">📅</span>
+      <span>Mensile</span>
+    </button>
+    <button class="tab-bar-btn" id="btn-tab-annuale">
+      <span class="icona-tab">📊</span>
+      <span>Annuale</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- Moduli JS, nell'ordine corretto di dipendenza -->
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="date-util.js"></script>
+<script src="importo-util.js"></script>
+<script src="stato.js"></script>
+<script src="grafici.js"></script>
+<script src="form-voce.js"></script>
+<script src="app.js"></script>
+<script src="auth.js"></script>
+
+<!-- Registrazione service worker per supporto PWA -->
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("service-worker.js").catch(function (err) {
+        console.warn("Service worker non registrato:", err);
+      });
+    });
+  }
+</script>
+
+</body>
+</html>

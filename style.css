@@ -1,0 +1,675 @@
+/* ============================================================
+   VARIABILI - Palette colori (chiaro/scuro automatico)
+   ============================================================ */
+
+:root {
+  --accento: #1B3A5C;
+  --accento-testo: #FFFFFF;
+  --sfondo: #F7F8FA;
+  --sfondo-card: #FFFFFF;
+  --testo-principale: #1A1A1A;
+  --testo-secondario: #6B7280;
+  --bordo: #E2E5EA;
+  --entrata: #1F9D55;
+  --spesa: #D64545;
+  --competenza: #E0A030;
+  --ombra: rgba(20, 30, 45, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accento: #3D6A99;
+    --accento-testo: #FFFFFF;
+    --sfondo: #11161D;
+    --sfondo-card: #1B222C;
+    --testo-principale: #EDEFF2;
+    --testo-secondario: #9AA3AF;
+    --bordo: #2A3340;
+    --entrata: #34D67A;
+    --spesa: #F2685C;
+    --competenza: #F0B94A;
+    --ombra: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ============================================================
+   RESET E BASE
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--sfondo);
+  color: var(--testo-principale);
+  line-height: 1.4;
+  padding-bottom: 72px; /* spazio per la tab bar fissa */
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select {
+  font-family: inherit;
+  font-size: 16px; /* evita zoom automatico su iOS al focus */
+}
+
+/* Rispetta la preferenza di riduzione del movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visibile per accessibilità da tastiera */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.riga-movimento:focus-visible,
+.scheda-mese-apri:focus-visible {
+  outline: 2px solid var(--accento);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   LAYOUT GENERALE
+   ============================================================ */
+
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.vista {
+  display: none;
+}
+
+.vista.attiva {
+  display: block;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.header {
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--testo-principale);
+  margin-bottom: 12px;
+}
+
+.selettore-anno {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.selettore-anno select {
+  background: var(--sfondo-card);
+  border: 1px solid var(--bordo);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--testo-principale);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   PILLOLE MESE (scorrimento orizzontale)
+   ============================================================ */
+
+.pillole-mese {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+
+.pillole-mese::-webkit-scrollbar {
+  display: none;
+}
+
+.pillola {
+  flex-shrink: 0;
+  background: var(--sfondo-card);
+  border: 1px solid var(--bordo);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--testo-secondario);
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.pillola.attiva {
+  background: var(--accento);
+  color: var(--accento-testo);
+  border-color: var(--accento);
+}
+
+/* ============================================================
+   RIEPILOGO NUMERICO
+   ============================================================ */
+
+.riepilogo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--sfondo-card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px var(--ombra);
+}
+
+.riepilogo-voce {
+  text-align: center;
+}
+
+.riepilogo-voce .etichetta {
+  font-size: 12px;
+  color: var(--testo-secondario);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.riepilogo-voce .valore {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.valore.positivo { color: var(--entrata); }
+.valore.negativo { color: var(--spesa); }
+
+/* ============================================================
+   GRAFICI
+   ============================================================ */
+
+.blocco-grafico {
+  background: var(--sfondo-card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px var(--ombra);
+}
+
+.blocco-grafico h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--testo-secondario);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.blocco-grafico canvas {
+  max-width: 100%;
+}
+
+.grafico-vuoto {
+  text-align: center;
+  color: var(--testo-secondario);
+  font-size: 14px;
+  padding: 24px 0;
+}
+
+/* ============================================================
+   BOTTONE NUOVA VOCE
+   ============================================================ */
+
+.btn-nuova-voce {
+  width: 100%;
+  background: var(--accento);
+  color: var(--accento-testo);
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.btn-nuova-voce:active {
+  opacity: 0.85;
+}
+
+/* ============================================================
+   FORM ESPANDIBILE
+   ============================================================ */
+
+.form-voce-contenitore {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+
+.form-voce-contenitore.aperto {
+  max-height: 900px; /* sufficientemente grande da contenere il form */
+}
+
+.form-voce {
+  background: var(--sfondo-card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px var(--ombra);
+}
+
+.campo {
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--testo-secondario);
+  margin-bottom: 6px;
+}
+
+.campo input,
+.campo select {
+  width: 100%;
+  background: var(--sfondo);
+  border: 1px solid var(--bordo);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--testo-principale);
+}
+
+.campo input:focus,
+.campo select:focus {
+  border-color: var(--accento);
+}
+
+.toggle-riga {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.toggle-riga label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--testo-principale);
+}
+
+.toggle-riga input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accento);
+}
+
+/* Suggerimenti autocomplete sotto il campo Descrizione */
+.suggerimenti-lista {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--sfondo-card);
+  border: 1px solid var(--bordo);
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 12px var(--ombra);
+  display: none;
+}
+
+.suggerimenti-lista.visibile {
+  display: block;
+}
+
+.suggerimento-voce {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--bordo);
+}
+
+.suggerimento-voce:last-child {
+  border-bottom: none;
+}
+
+.suggerimento-voce:active {
+  background: var(--sfondo);
+}
+
+.suggerimento-voce .nome {
+  font-weight: 600;
+  color: var(--testo-principale);
+}
+
+.suggerimento-voce .dettaglio {
+  font-size: 12px;
+  color: var(--testo-secondario);
+}
+
+.azioni-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.btn-salva,
+.btn-elimina,
+.btn-annulla {
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.btn-salva {
+  background: var(--accento);
+  color: var(--accento-testo);
+}
+
+.btn-elimina {
+  background: var(--spesa);
+  color: #FFFFFF;
+}
+
+.btn-annulla {
+  background: var(--sfondo);
+  color: var(--testo-secondario);
+  border: 1px solid var(--bordo);
+}
+
+/* ============================================================
+   LISTA MOVIMENTI
+   ============================================================ */
+
+.lista-movimenti {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lista-vuota {
+  text-align: center;
+  color: var(--testo-secondario);
+  font-size: 14px;
+  padding: 32px 0;
+}
+
+.riga-movimento-contenitore {
+  background: var(--sfondo-card);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px var(--ombra);
+  overflow: hidden;
+}
+
+.riga-movimento {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+}
+
+.riga-movimento .colonna-sinistra {
+  flex: 1;
+  min-width: 0;
+}
+
+.riga-movimento .data {
+  font-size: 12px;
+  color: var(--testo-secondario);
+  margin-bottom: 2px;
+}
+
+.riga-movimento .descrizione {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--testo-principale);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.riga-movimento .categoria-riga {
+  font-size: 12px;
+  color: var(--testo-secondario);
+  margin-top: 2px;
+}
+
+.riga-movimento .badge-competenza {
+  display: inline-block;
+  color: var(--competenza);
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.riga-movimento .colonna-destra {
+  flex-shrink: 0;
+  margin-left: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   TAB BAR (navigazione fissa in basso)
+   ============================================================ */
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: var(--sfondo-card);
+  border-top: 1px solid var(--bordo);
+  box-shadow: 0 -1px 6px var(--ombra);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.tab-bar-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--testo-secondario);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tab-bar-btn .icona-tab {
+  font-size: 20px;
+}
+
+.tab-bar-btn.attivo {
+  color: var(--accento);
+}
+
+/* ============================================================
+   VISTA ANNUALE - SCHEDE MENSILI
+   ============================================================ */
+
+.schede-mensili {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scheda-mese {
+  background: var(--sfondo-card);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px var(--ombra);
+  position: relative;
+}
+
+.scheda-mese-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.scheda-mese-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--testo-principale);
+}
+
+.scheda-mese-apri {
+  background: var(--sfondo);
+  border: 1px solid var(--bordo);
+  border-radius: 8px;
+  color: var(--accento);
+  font-size: 18px;
+  font-weight: 700;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.scheda-mese-corpo {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.scheda-mese-corpo canvas {
+  flex-shrink: 0;
+}
+
+.scheda-mese-dettagli {
+  flex: 1;
+  min-width: 0;
+}
+
+.scheda-mese-saldo {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.scheda-mese-categorie {
+  font-size: 12px;
+  color: var(--testo-secondario);
+  line-height: 1.6;
+}
+
+.scheda-mese-vuota {
+  text-align: center;
+  color: var(--testo-secondario);
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+/* ============================================================
+   SCHERMATA DI LOGIN
+   ============================================================ */
+
+.schermata-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-box {
+  background: var(--sfondo-card);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 4px 16px var(--ombra);
+}
+
+.login-icona {
+  width: 64px;
+  height: 64px;
+  background: var(--accento);
+  color: #FFFFFF;
+  border-radius: 16px;
+  font-size: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.login-box h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.login-sottotitolo {
+  font-size: 14px;
+  color: var(--testo-secondario);
+  margin-bottom: 24px;
+}
+
+#bottone-google-signin {
+  display: flex;
+  justify-content: center;
+}
+
+.login-errore {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--spesa);
+}
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+
+.nascosto {
+  display: none !important;
+}
+
+.spinner-caricamento {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--testo-secondario);
+  font-size: 14px;
+}
