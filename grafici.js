@@ -44,6 +44,10 @@ const Grafici = (function () {
     const canvas = document.getElementById("grafico-torta-mensile");
     const contenitoreVuoto = document.getElementById("grafico-torta-mensile-vuoto");
     if (!canvas) return;
+    if (typeof Chart === "undefined") {
+      console.warn("Chart.js non ancora disponibile, salto il disegno del grafico.");
+      return;
+    }
 
     if (speseCategorie.length === 0) {
       canvas.classList.add("nascosto");
@@ -97,6 +101,10 @@ const Grafici = (function () {
   function disegnaBarreAnnuali(totaliPerMese) {
     const canvas = document.getElementById("grafico-barre-annuali");
     if (!canvas) return;
+    if (typeof Chart === "undefined") {
+      console.warn("Chart.js non ancora disponibile, salto il disegno del grafico.");
+      return;
+    }
 
     const etichette = totaliPerMese.map(function (t) { return DateUtil.nomeMese(t.mese, true); });
     const entrate = totaliPerMese.map(function (t) { return t.entrate; });
@@ -138,6 +146,10 @@ const Grafici = (function () {
   function disegnaTortaScheda(canvasId, speseCategorie) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
+    if (typeof Chart === "undefined") {
+      console.warn("Chart.js non ancora disponibile, salto il disegno del grafico.");
+      return;
+    }
 
     if (istanzeTorteSchede[canvasId]) {
       istanzeTorteSchede[canvasId].destroy();
