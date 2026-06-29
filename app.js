@@ -4,9 +4,36 @@
 
 const App = (function () {
   async function inizializza() {
+    await attendiChartJsPronta();
     FormVoce.inizializza(document.getElementById("form-voce-mensile-contenitore"));
     collegaEventiGlobali();
     await ricaricaTuttoERidisegna();
+  }
+
+  /**
+   * Chart.js si carica da CDN in modo asincrono. Se App.inizializza()
+   * viene eseguito prima che lo script esterno sia pronto, l'oggetto
+   * globale "Chart" non esiste ancora, e disegnare i grafici lancia
+   * un errore che blocca il resto del rendering. Questa funzione
+   * attende, riprovando ogni 100ms, finché Chart non è disponibile
+   * (con un limite massimo per evitare un'attesa infinita in caso di
+   * problemi di rete).
+   */
+  function attendiChartJsPronta() {
+    return new Promise(function (resolve) {
+      let tentativi = 0;
+      const massimoTentativi = 50; // 50 x 100ms = 5 secondi massimo
+
+      const intervallo = setInterval(function () {
+        tentativi++;
+        const pronta = typeof Chart !== "undefined";
+
+        if (pronta || tentativi >= massimoTentativi) {
+          clearInterval(intervallo);
+          resolve();
+        }
+      }, 100);
+    });
   }
 
   async function ricaricaTuttoERidisegna() {
