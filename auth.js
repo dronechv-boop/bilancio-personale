@@ -72,7 +72,44 @@ const Auth = (function () {
     }
 
     mostraLogin();
+    attendiLibreriaGoogleEPoiInizializza();
+  }
 
+  /**
+   * La libreria Google Identity Services si carica in modo asincrono
+   * (script con async/defer). Se auth.js viene eseguito prima che lo
+   * script esterno sia pronto, l'oggetto globale "google" non esiste
+   * ancora. Questa funzione attende, riprovando ogni 100ms, finché
+   * l'oggetto non è disponibile (con un limite massimo di tentativi
+   * per evitare un ciclo infinito in caso di problemi di rete).
+   */
+  function attendiLibreriaGoogleEPoiInizializza() {
+    let tentativi = 0;
+    const massimoTentativi = 50; // 50 x 100ms = 5 secondi massimo
+
+    const intervallo = setInterval(function () {
+      tentativi++;
+      const pronta = typeof google !== "undefined" && google.accounts && google.accounts.id;
+
+      if (pronta) {
+        clearInterval(intervallo);
+        inizializzaLibreriaGoogle();
+      } else if (tentativi >= massimoTentativi) {
+        clearInterval(intervallo);
+        mostraErroreLibreriaNonCaricata();
+      }
+    }, 100);
+  }
+
+  function mostraErroreLibreriaNonCaricata() {
+    const messaggio = document.getElementById("messaggio-login-errore");
+    if (messaggio) {
+      messaggio.textContent = "Impossibile caricare il servizio di accesso Google. Controlla la connessione e ricarica la pagina.";
+      messaggio.classList.remove("nascosto");
+    }
+  }
+
+  function inizializzaLibreriaGoogle() {
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: gestisciRisposta
