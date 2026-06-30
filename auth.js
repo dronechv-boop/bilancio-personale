@@ -137,9 +137,6 @@ const Auth = (function () {
       document.getElementById("bottone-google-signin"),
       { theme: "outline", size: "large", text: "signin_with", locale: "it" }
     );
-
-    // Mostra anche il prompt "One Tap" se l'utente ha già una sessione Google attiva
-    google.accounts.id.prompt();
   }
 
   return {
