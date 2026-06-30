@@ -64,14 +64,35 @@ const Auth = (function () {
     console.log("[AUTH] mostraApp() eseguito, nascondo login, mostro app");
     document.getElementById("schermata-login").classList.add("nascosto");
     document.getElementById("app-contenitore").classList.remove("nascosto");
-    if (window.App && typeof window.App.inizializza === "function") {
-      console.log("[AUTH] Chiamo App.inizializza()");
-      window.App.inizializza()
-        .then(function () { console.log("[AUTH] App.inizializza() completato con successo"); })
-        .catch(function (err) { console.log("[AUTH] ERRORE in App.inizializza():", err); });
-    } else {
-      console.log("[AUTH] App.inizializza non disponibile!", window.App);
-    }
+    attendiAppEPoiInizializza();
+  }
+
+  /**
+   * App (app.js) potrebbe non essere ancora definito sull'oggetto
+   * globale nel preciso istante in cui il login Google completa,
+   * specialmente se il login è molto rapido (sessione già attiva).
+   * Attende, riprovando ogni 100ms, finché App.inizializza non è
+   * disponibile (limite massimo 5 secondi).
+   */
+  function attendiAppEPoiInizializza() {
+    let tentativi = 0;
+    const massimoTentativi = 50;
+
+    const intervallo = setInterval(function () {
+      tentativi++;
+      const pronta = window.App && typeof window.App.inizializza === "function";
+
+      if (pronta) {
+        clearInterval(intervallo);
+        console.log("[AUTH] Chiamo App.inizializza()");
+        window.App.inizializza()
+          .then(function () { console.log("[AUTH] App.inizializza() completato con successo"); })
+          .catch(function (err) { console.log("[AUTH] ERRORE in App.inizializza():", err); });
+      } else if (tentativi >= massimoTentativi) {
+        clearInterval(intervallo);
+        console.log("[AUTH] App.inizializza non disponibile dopo attesa massima!", window.App);
+      }
+    }, 100);
   }
 
   function mostraLogin() {
