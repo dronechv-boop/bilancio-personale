@@ -26,15 +26,27 @@ const Auth = (function () {
     return JSON.parse(payloadJson);
   }
 
+  let giaGestito = false;
+
   function gestisciRisposta(risposta) {
+    if (giaGestito) {
+      console.log("[AUTH] Risposta Google ignorata (già gestita in precedenza)");
+      return;
+    }
+    giaGestito = true;
+
+    console.log("[AUTH] Risposta Google ricevuta");
     const payload = decodificaJwt(risposta.credential);
     const emailVerificata = payload.email_verified === true || payload.email_verified === "true";
     const emailCorrisponde = payload.email && payload.email.toLowerCase() === EMAIL_AUTORIZZATA.toLowerCase();
+    console.log("[AUTH] Email verificata:", emailVerificata, "- corrisponde:", emailCorrisponde);
 
     if (emailVerificata && emailCorrisponde) {
       sessionStorage.setItem(CHIAVE_SESSIONE, "true");
+      console.log("[AUTH] Chiamo mostraApp()");
       mostraApp();
     } else {
+      giaGestito = false; // permette un nuovo tentativo se l'email non era quella giusta
       mostraErroreAccessoNegato(payload.email);
     }
   }
@@ -49,10 +61,16 @@ const Auth = (function () {
   }
 
   function mostraApp() {
+    console.log("[AUTH] mostraApp() eseguito, nascondo login, mostro app");
     document.getElementById("schermata-login").classList.add("nascosto");
     document.getElementById("app-contenitore").classList.remove("nascosto");
     if (window.App && typeof window.App.inizializza === "function") {
-      window.App.inizializza();
+      console.log("[AUTH] Chiamo App.inizializza()");
+      window.App.inizializza()
+        .then(function () { console.log("[AUTH] App.inizializza() completato con successo"); })
+        .catch(function (err) { console.log("[AUTH] ERRORE in App.inizializza():", err); });
+    } else {
+      console.log("[AUTH] App.inizializza non disponibile!", window.App);
     }
   }
 
