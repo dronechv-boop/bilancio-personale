@@ -352,6 +352,12 @@ const App = (function () {
   };
 })();
 
+// Assegnazione esplicita a window: le dichiarazioni "const" a livello
+// di script non diventano automaticamente proprietà di window (a
+// differenza delle vecchie dichiarazioni "var"), quindi serve farlo
+// a mano perché auth.js possa accedervi tramite window.App.
+window.App = App;
+
 // Nota: App.inizializza() viene chiamato da Auth (auth.js) solo dopo
 // un login Google riuscito con l'email autorizzata, non automaticamente
 // al caricamento della pagina.
