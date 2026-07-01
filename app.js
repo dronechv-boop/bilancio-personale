@@ -295,7 +295,9 @@ const App = (function () {
           <button class="scheda-mese-apri" id="apri-scheda-${anno}-${mese}" aria-label="Apri ${DateUtil.nomeMese(mese)}">▸</button>
         </div>
         <div class="scheda-mese-corpo">
-          <canvas id="${canvasId}" width="80" height="80"></canvas>
+          <div class="contenitore-torta-scheda">
+            <canvas id="${canvasId}" width="56" height="56"></canvas>
+          </div>
           <div class="scheda-mese-dettagli">
             <div class="scheda-mese-saldo ${classeSaldo}">Saldo: ${ImportoUtil.formattaConSegno(totali.saldo, totali.saldo >= 0 ? "Entrata" : "Spesa")}</div>
             <div class="scheda-mese-categorie">${elencoCategorie}</div>
