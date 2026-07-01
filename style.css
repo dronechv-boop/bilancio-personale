@@ -51,7 +51,7 @@ body {
   background: var(--sfondo);
   color: var(--testo-principale);
   line-height: 1.4;
-  padding-bottom: 72px; /* spazio per la tab bar fissa */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0)); /* spazio per la tab bar fissa */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -106,7 +106,13 @@ select:focus-visible,
    ============================================================ */
 
 .header {
-  margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--sfondo);
+  margin: 0 -16px 16px;
+  padding: calc(12px + env(safe-area-inset-top, 0)) 16px 10px;
+  box-shadow: 0 2px 6px var(--ombra);
 }
 
 .header h1 {
@@ -371,6 +377,16 @@ select:focus-visible,
   color: var(--testo-secondario);
 }
 
+.link-torna-a-tendina {
+  background: none;
+  border: none;
+  color: var(--accento);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 0 0;
+  text-align: left;
+}
+
 .azioni-form {
   display: flex;
   gap: 8px;
@@ -467,9 +483,9 @@ select:focus-visible,
 
 .riga-movimento .badge-competenza {
   display: inline-block;
-  color: var(--competenza);
-  font-size: 11px;
-  font-weight: 600;
+  color: var(--testo-secondario);
+  font-size: 12px;
+  font-weight: 400;
   margin-left: 6px;
 }
 
@@ -496,24 +512,36 @@ select:focus-visible,
   box-shadow: 0 -1px 6px var(--ombra);
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0);
+  transition: transform 0.2s ease;
+}
+
+.tab-bar.tastiera-aperta {
+  transform: translateY(100%);
 }
 
 .tab-bar-btn {
   flex: 1;
   background: none;
   border: none;
-  padding: 12px 0 10px;
+  padding: 7px 0 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   color: var(--testo-secondario);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
 .tab-bar-btn .icona-tab {
-  font-size: 20px;
+  width: 22px;
+  height: 22px;
+}
+
+.tab-bar-btn .icona-tab svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .tab-bar-btn.attivo {
