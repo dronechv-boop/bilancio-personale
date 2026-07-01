@@ -139,6 +139,42 @@ const Stato = (function () {
     return risultati;
   }
 
+  /**
+   * Ritorna le categorie già usate, ordinate per frequenza d'uso
+   * decrescente (le più usate prima). A parità di frequenza, ordine
+   * alfabetico come criterio secondario stabile.
+   */
+  function getCategorieOrdinatePerFrequenza() {
+    const conteggio = {};
+    tutteLeRighe.forEach(function (r) {
+      if (r.categoria) conteggio[r.categoria] = (conteggio[r.categoria] || 0) + 1;
+    });
+    return Object.keys(conteggio).sort(function (a, b) {
+      return conteggio[b] - conteggio[a] || a.localeCompare(b);
+    });
+  }
+
+  /**
+   * Ritorna le sottocategorie già usate insieme a una specifica
+   * categoria, ordinate per data dell'ultimo utilizzo (la più recente
+   * prima). Se la categoria è vuota o non ha mai avuto sottocategorie,
+   * ritorna un array vuoto.
+   */
+  function getSottocategoriePerCategoria(categoria) {
+    if (!categoria) return [];
+    const ultimaData = {};
+    tutteLeRighe.forEach(function (r) {
+      if (r.categoria === categoria && r.sottocategoria) {
+        if (!ultimaData[r.sottocategoria] || DateUtil.confronta(r.data, ultimaData[r.sottocategoria]) > 0) {
+          ultimaData[r.sottocategoria] = r.data;
+        }
+      }
+    });
+    return Object.keys(ultimaData).sort(function (a, b) {
+      return DateUtil.confronta(ultimaData[b], ultimaData[a]);
+    });
+  }
+
   return {
     impostaRighe: impostaRighe,
     impostaMeta: impostaMeta,
@@ -155,6 +191,8 @@ const Stato = (function () {
     calcolaTotali: calcolaTotali,
     calcolaSpesePerCategoria: calcolaSpesePerCategoria,
     calcolaTotaliPerMese: calcolaTotaliPerMese,
+    getCategorieOrdinatePerFrequenza: getCategorieOrdinatePerFrequenza,
+    getSottocategoriePerCategoria: getSottocategoriePerCategoria,
     getTutteLeRighe: function () { return tutteLeRighe; }
   };
 })();
