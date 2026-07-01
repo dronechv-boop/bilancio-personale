@@ -24,16 +24,44 @@ const Grafici = (function () {
   }
 
   /**
-   * Genera una palette di colori per le categorie, basata su variazioni
-   * del colore accento, per restare visivamente coerenti col tema navy.
+   * Palette estesa per le categorie: 16 colori ben distinguibili tra
+   * loro, non solo variazioni di navy, così anche con 10+ categorie
+   * ognuna resta facilmente riconoscibile.
    */
-  function paletteCategoria(numero) {
-    const base = ["#1B3A5C", "#3D6A99", "#6B95C2", "#9BBAE0", "#2C5170", "#4A7CA8", "#7FA8D4"];
-    const palette = [];
-    for (let i = 0; i < numero; i++) {
-      palette.push(base[i % base.length]);
-    }
-    return palette;
+  const PALETTE_CATEGORIE = [
+    "#1B3A5C", "#2E86AB", "#3DBE79", "#E0A030", "#D64545",
+    "#8E44AD", "#16A085", "#E67E22", "#5D6D7E", "#C0392B",
+    "#27AE60", "#2980B9", "#F39C12", "#9B59B6", "#1ABC9C",
+    "#7F8C8D"
+  ];
+
+  let mappaColoriCategorie = null;
+
+  /**
+   * Ricostruisce la mappa nome-categoria -> colore, in modo
+   * deterministico: le categorie vengono ordinate alfabeticamente
+   * (ordine stabile, sempre uguale a parità di dati) e a ciascuna
+   * viene assegnato un colore della palette in quell'ordine fisso.
+   * Così ogni categoria mantiene sempre lo stesso colore in ogni
+   * vista e ad ogni ricarica, finché l'elenco delle categorie non
+   * cambia. Va richiamata ogni volta che i dati vengono ricaricati.
+   */
+  function aggiornaMappaColori() {
+    const categorie = new Set();
+    Stato.getTutteLeRighe().forEach(function (r) {
+      if (r.categoria) categorie.add(r.categoria);
+    });
+    const elencoOrdinato = Array.from(categorie).sort();
+
+    mappaColoriCategorie = {};
+    elencoOrdinato.forEach(function (categoria, indice) {
+      mappaColoriCategorie[categoria] = PALETTE_CATEGORIE[indice % PALETTE_CATEGORIE.length];
+    });
+  }
+
+  function coloreCategoria(nomeCategoria) {
+    if (!mappaColoriCategorie) aggiornaMappaColori();
+    return mappaColoriCategorie[nomeCategoria] || "#999999";
   }
 
   /**
@@ -68,7 +96,7 @@ const Grafici = (function () {
     if (istanzaTortaMensile) {
       istanzaTortaMensile.data.labels = etichette;
       istanzaTortaMensile.data.datasets[0].data = valori;
-      istanzaTortaMensile.data.datasets[0].backgroundColor = paletteCategoria(etichette.length);
+      istanzaTortaMensile.data.datasets[0].backgroundColor = etichette.map(coloreCategoria);
       istanzaTortaMensile.update();
       return;
     }
@@ -79,7 +107,7 @@ const Grafici = (function () {
         labels: etichette,
         datasets: [{
           data: valori,
-          backgroundColor: paletteCategoria(etichette.length),
+          backgroundColor: etichette.map(coloreCategoria),
           borderWidth: 0
         }]
       },
@@ -166,7 +194,7 @@ const Grafici = (function () {
         labels: etichette,
         datasets: [{
           data: valori,
-          backgroundColor: paletteCategoria(etichette.length),
+          backgroundColor: etichette.map(coloreCategoria),
           borderWidth: 0
         }]
       },
@@ -190,6 +218,7 @@ const Grafici = (function () {
     disegnaTortaMensile: disegnaTortaMensile,
     disegnaBarreAnnuali: disegnaBarreAnnuali,
     disegnaTortaScheda: disegnaTortaScheda,
-    distruggiTorteSchede: distruggiTorteSchede
+    distruggiTorteSchede: distruggiTorteSchede,
+    aggiornaMappaColori: aggiornaMappaColori
   };
 })();
