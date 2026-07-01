@@ -93,20 +93,12 @@ const FormVoce = (function () {
           </select>
         </div>
 
-        <div class="campo">
-          <label for="campo-categoria">Categoria</label>
-          <input type="text" id="campo-categoria" value="${escapeHtml(valori.categoria)}" list="lista-categorie" autocomplete="off">
-          <datalist id="lista-categorie">
-            ${meta.liste.categorie.map(function (c) { return '<option value="' + escapeHtml(c) + '">'; }).join("")}
-          </datalist>
+        <div class="campo" id="contenitore-categoria">
+          <!-- popolato da renderizzaCampoConAggiunta() -->
         </div>
 
-        <div class="campo">
-          <label for="campo-sottocategoria">Sottocategoria</label>
-          <input type="text" id="campo-sottocategoria" value="${escapeHtml(valori.sottocategoria)}" list="lista-sottocategorie" autocomplete="off">
-          <datalist id="lista-sottocategorie">
-            ${meta.liste.sottocategorie.map(function (s) { return '<option value="' + escapeHtml(s) + '">'; }).join("")}
-          </datalist>
+        <div class="campo" id="contenitore-sottocategoria">
+          <!-- popolato da renderizzaCampoConAggiunta() -->
         </div>
 
         <div class="campo">
@@ -140,12 +132,110 @@ const FormVoce = (function () {
     // Datalist nascosta usata solo per i fissi (la rendering del campo
     // descrizione varia in base al toggle Fisso, gestito separatamente)
     aggiornaCampoDescrizione(valori.fisso, valori.descrizione, opzioniFissi);
+    renderizzaCampoConAggiunta(
+      "categoria", "Categoria",
+      Stato.getCategorieOrdinatePerFrequenza(), valori.categoria, "Nuova categoria",
+      aggiornaSottocategoriaDaCategoria
+    );
+    renderizzaCampoConAggiunta(
+      "sottocategoria", "Sottocategoria",
+      Stato.getSottocategoriePerCategoria(valori.categoria || ""), valori.sottocategoria, "Nuova sottocategoria"
+    );
     collegaEventi(valori);
   }
 
   /**
+   * Ricostruisce la tendina Sottocategoria in base alla Categoria
+   * attualmente selezionata (mostra solo le sottocategorie già usate
+   * insieme a quella categoria, ordinate dall'ultima usata). Chiamata
+   * ogni volta che il valore di Categoria cambia manualmente.
+   */
+  function aggiornaSottocategoriaDaCategoria() {
+    const categoriaAttuale = leggiValoreConAggiunta("categoria");
+    renderizzaCampoConAggiunta(
+      "sottocategoria", "Sottocategoria",
+      Stato.getSottocategoriePerCategoria(categoriaAttuale || ""), "", "Nuova sottocategoria"
+    );
+  }
+
+  /**
+   * Disegna un campo come tendina con tutte le opzioni già usate, più
+   * una voce speciale "+ Aggiungi nuova..." che, se scelta, trasforma
+   * il campo in un testo libero per inserire un valore non ancora
+   * presente in elenco. Usata per Categoria e Sottocategoria.
+   */
+  function renderizzaCampoConAggiunta(nomeCampo, etichetta, opzioniEsistenti, valoreAttuale, placeholderNuovo, onCambiamento) {
+    const contenitore = document.getElementById("contenitore-" + nomeCampo);
+    if (!contenitore) return;
+
+    const valoreNonInElenco = valoreAttuale && opzioniEsistenti.indexOf(valoreAttuale) === -1;
+
+    const opzioniHtml = opzioniEsistenti
+      .map(function (o) {
+        return '<option value="' + escapeHtml(o) + '" ' + (o === valoreAttuale ? "selected" : "") + ">" + escapeHtml(o) + "</option>";
+      })
+      .join("");
+
+    contenitore.innerHTML = `
+      <label for="campo-${nomeCampo}">${etichetta}</label>
+      <select id="campo-${nomeCampo}" class="${valoreNonInElenco ? "nascosto" : ""}">
+        <option value="">Seleziona...</option>
+        ${opzioniHtml}
+        <option value="__nuovo__">➕ Aggiungi nuova...</option>
+      </select>
+      <input type="text" id="campo-${nomeCampo}-testo" class="${valoreNonInElenco ? "" : "nascosto"}" value="${escapeHtml(valoreNonInElenco ? valoreAttuale : "")}" placeholder="${placeholderNuovo}" autocomplete="off">
+      <button type="button" class="link-torna-a-tendina ${valoreNonInElenco && opzioniEsistenti.length > 0 ? "" : "nascosto"}" id="campo-${nomeCampo}-torna">↺ Scegli da elenco esistente</button>
+    `;
+
+    const select = document.getElementById("campo-" + nomeCampo);
+    const testo = document.getElementById("campo-" + nomeCampo + "-testo");
+    const btnTorna = document.getElementById("campo-" + nomeCampo + "-torna");
+
+    select.addEventListener("change", function () {
+      if (select.value === "__nuovo__") {
+        select.classList.add("nascosto");
+        testo.classList.remove("nascosto");
+        testo.value = "";
+        testo.focus();
+        if (opzioniEsistenti.length > 0) btnTorna.classList.remove("nascosto");
+      }
+      if (onCambiamento) onCambiamento();
+    });
+
+    testo.addEventListener("input", function () {
+      if (onCambiamento) onCambiamento();
+    });
+
+    btnTorna.addEventListener("click", function () {
+      testo.classList.add("nascosto");
+      btnTorna.classList.add("nascosto");
+      select.classList.remove("nascosto");
+      select.value = "";
+      if (onCambiamento) onCambiamento();
+    });
+  }
+
+  /**
+   * Legge il valore corrente di un campo "tendina con aggiunta"
+   * (Categoria o Sottocategoria), sia che sia in modalità tendina che
+   * in modalità testo libero.
+   */
+  function leggiValoreConAggiunta(nomeCampo) {
+    const select = document.getElementById("campo-" + nomeCampo);
+    const testo = document.getElementById("campo-" + nomeCampo + "-testo");
+    if (select && !select.classList.contains("nascosto")) {
+      return select.value === "__nuovo__" ? "" : select.value;
+    }
+    if (testo) return testo.value.trim();
+    return "";
+  }
+
+  /**
    * Disegna il campo Descrizione: tendina chiusa se Fisso=Sì,
-   * testo libero con suggerimenti se Fisso=No.
+   * testo libero con suggerimenti se Fisso=No. Quando Fisso=Sì, la
+   * tendina include anche un'opzione "Aggiungi nuova voce fissa..."
+   * che permette di registrare una voce fissa mai vista prima senza
+   * dover disattivare il toggle.
    */
   function aggiornaCampoDescrizione(fisso, valoreAttuale, opzioniFissiHtml) {
     const contenitore = document.getElementById("contenitore-descrizione");
@@ -157,30 +247,60 @@ const FormVoce = (function () {
         <select id="campo-descrizione">
           <option value="">Seleziona una voce fissa...</option>
           ${opzioniFissiHtml}
+          <option value="__nuovo__">➕ Aggiungi nuova voce fissa...</option>
         </select>
       `;
       const select = document.getElementById("campo-descrizione");
       if (valoreAttuale) select.value = valoreAttuale;
 
       select.addEventListener("change", function () {
-        precompilaDaNome(select.value);
+        if (select.value === "__nuovo__") {
+          renderizzaDescrizioneTestoLibero("", true);
+        } else {
+          precompilaDaNome(select.value);
+        }
       });
     } else {
-      contenitore.innerHTML = `
-        <label for="campo-descrizione">Descrizione</label>
-        <input type="text" id="campo-descrizione" value="${escapeHtml(valoreAttuale)}" autocomplete="off" placeholder="Es. Regalo compleanno Luca">
-        <div class="suggerimenti-lista" id="lista-suggerimenti"></div>
-      `;
-      const input = document.getElementById("campo-descrizione");
-      input.addEventListener("input", function () {
-        gestisciInputDescrizione(input.value);
-      });
-      input.addEventListener("blur", function () {
-        // Piccolo ritardo per permettere il click sul suggerimento
-        setTimeout(function () {
-          const lista = document.getElementById("lista-suggerimenti");
-          if (lista) lista.classList.remove("visibile");
-        }, 150);
+      renderizzaDescrizioneTestoLibero(valoreAttuale, false);
+    }
+  }
+
+  /**
+   * Disegna il campo Descrizione come testo libero con suggerimenti.
+   * Se mostraTornaAFissi è vero (siamo arrivati qui scegliendo
+   * "Aggiungi nuova voce fissa" mentre Fisso resta Sì), mostra anche
+   * un link per tornare alla tendina delle voci fisse esistenti.
+   */
+  function renderizzaDescrizioneTestoLibero(valoreAttuale, mostraTornaAFissi) {
+    const contenitore = document.getElementById("contenitore-descrizione");
+    contenitore.innerHTML = `
+      <label for="campo-descrizione">Descrizione</label>
+      <input type="text" id="campo-descrizione" value="${escapeHtml(valoreAttuale)}" autocomplete="off" placeholder="Es. Regalo compleanno Luca">
+      <div class="suggerimenti-lista" id="lista-suggerimenti"></div>
+      <button type="button" class="link-torna-a-tendina ${mostraTornaAFissi ? "" : "nascosto"}" id="btn-torna-fissi">↺ Scegli da voci fisse esistenti</button>
+    `;
+    const input = document.getElementById("campo-descrizione");
+    input.addEventListener("input", function () {
+      gestisciInputDescrizione(input.value);
+    });
+    input.addEventListener("blur", function () {
+      // Piccolo ritardo per permettere il click sul suggerimento
+      setTimeout(function () {
+        const lista = document.getElementById("lista-suggerimenti");
+        if (lista) lista.classList.remove("visibile");
+      }, 150);
+    });
+
+    if (mostraTornaAFissi) {
+      const meta = Stato.getMeta();
+      const btnTorna = document.getElementById("btn-torna-fissi");
+      btnTorna.addEventListener("click", function () {
+        const opzioniFissi = meta.nomiFissi
+          .map(function (f) {
+            return '<option value="' + escapeHtml(f.descrizione) + '">' + escapeHtml(f.descrizione) + "</option>";
+          })
+          .join("");
+        aggiornaCampoDescrizione(true, "", opzioniFissi);
       });
     }
   }
@@ -241,14 +361,49 @@ const FormVoce = (function () {
   }
 
   /**
-   * Precompila Tipo/Categoria/Sottocategoria/Importo da un suggerimento
-   * selezionato, mantenendo intatta la Descrizione scritta dall'utente.
+   * Imposta il valore di un campo "tendina con aggiunta" in modo
+   * intelligente: se il valore esiste già tra le opzioni, seleziona
+   * quella voce nella tendina; altrimenti passa automaticamente alla
+   * modalità testo libero con quel valore (utile quando un suggerimento
+   * porta una categoria non ancora presente in elenco).
+   */
+  function impostaValoreConAggiunta(nomeCampo, valore) {
+    const select = document.getElementById("campo-" + nomeCampo);
+    const testo = document.getElementById("campo-" + nomeCampo + "-testo");
+    const btnTorna = document.getElementById("campo-" + nomeCampo + "-torna");
+    if (!select || !testo) return;
+
+    const esisteTraLeOpzioni = Array.prototype.some.call(select.options, function (o) {
+      return o.value === valore;
+    });
+
+    if (esisteTraLeOpzioni && valore) {
+      select.value = valore;
+      select.classList.remove("nascosto");
+      testo.classList.add("nascosto");
+      if (btnTorna) btnTorna.classList.add("nascosto");
+    } else {
+      select.classList.add("nascosto");
+      testo.classList.remove("nascosto");
+      testo.value = valore || "";
+      if (btnTorna) btnTorna.classList.remove("nascosto");
+    }
+  }
+
+  /**
+   * Precompila Tipo/Categoria/Sottocategoria da un suggerimento
+   * selezionato (spesa/entrata occasionale), mantenendo intatta la
+   * Descrizione scritta dall'utente. L'Importo NON viene precompilato
+   * qui (per le occasionali l'importo varia quasi sempre): resta
+   * comunque visibile nel suggerimento per riferimento.
    */
   function precompilaDaSuggerimento(suggerimento) {
     document.getElementById("campo-tipo").value = suggerimento.tipo;
-    document.getElementById("campo-categoria").value = suggerimento.categoria;
-    document.getElementById("campo-sottocategoria").value = suggerimento.sottocategoria || "";
-    document.getElementById("campo-importo").value = ImportoUtil.formatta(suggerimento.importo);
+    impostaValoreConAggiunta("categoria", suggerimento.categoria);
+    renderizzaCampoConAggiunta(
+      "sottocategoria", "Sottocategoria",
+      Stato.getSottocategoriePerCategoria(suggerimento.categoria), suggerimento.sottocategoria || "", "Nuova sottocategoria"
+    );
   }
 
   /**
@@ -256,7 +411,8 @@ const FormVoce = (function () {
    * i dati dell'ultima occorrenza e precompila tutto, inclusa la
    * possibilità di sovrascrivere la descrizione stessa con il nome
    * scelto (per i fissi, a differenza delle occasionali, ha senso che
-   * la Descrizione coincida col nome scelto).
+   * la Descrizione coincida col nome scelto). Qui l'Importo resta
+   * precompilato, perché i fissi tendono a ripetersi con cifra simile.
    */
   function precompilaDaNome(nome) {
     const meta = Stato.getMeta();
@@ -266,9 +422,26 @@ const FormVoce = (function () {
     if (!trovato) return;
 
     document.getElementById("campo-tipo").value = trovato.tipo;
-    document.getElementById("campo-categoria").value = trovato.categoria;
-    document.getElementById("campo-sottocategoria").value = trovato.sottocategoria || "";
+    impostaValoreConAggiunta("categoria", trovato.categoria);
+    renderizzaCampoConAggiunta(
+      "sottocategoria", "Sottocategoria",
+      Stato.getSottocategoriePerCategoria(trovato.categoria), trovato.sottocategoria || "", "Nuova sottocategoria"
+    );
     document.getElementById("campo-importo").value = ImportoUtil.formatta(trovato.importo);
+  }
+
+  /**
+   * Legge il valore attualmente presente nel campo Descrizione,
+   * indipendentemente dal fatto che in quel momento sia renderizzato
+   * come tendina (Fisso=Sì) o come testo libero (Fisso=No).
+   */
+  function leggiValoreDescrizioneAttuale() {
+    const campo = document.getElementById("campo-descrizione");
+    if (!campo) return "";
+    if (campo.tagName === "SELECT") {
+      return campo.value === "__nuovo__" || campo.value === "" ? "" : campo.value;
+    }
+    return campo.value || "";
   }
 
   function collegaEventi(valoriIniziali) {
@@ -279,7 +452,22 @@ const FormVoce = (function () {
           return '<option value="' + escapeHtml(f.descrizione) + '">' + escapeHtml(f.descrizione) + "</option>";
         })
         .join("");
-      aggiornaCampoDescrizione(e.target.checked, "", opzioniFissi);
+      const valoreAttuale = leggiValoreDescrizioneAttuale();
+
+      if (e.target.checked) {
+        const esisteComeFisso = meta.nomiFissi.some(function (f) { return f.descrizione === valoreAttuale; });
+        if (esisteComeFisso) {
+          aggiornaCampoDescrizione(true, valoreAttuale, opzioniFissi);
+        } else {
+          // Il testo digitato non corrisponde a nessun fisso esistente:
+          // passiamo direttamente alla modalità "nuova voce fissa",
+          // preservando quanto già scritto invece di cancellarlo.
+          aggiornaCampoDescrizione(true, "", opzioniFissi);
+          renderizzaDescrizioneTestoLibero(valoreAttuale, true);
+        }
+      } else {
+        renderizzaDescrizioneTestoLibero(valoreAttuale, false);
+      }
     });
 
     document.getElementById("campo-toggle-competenza").addEventListener("change", function (e) {
@@ -301,8 +489,8 @@ const FormVoce = (function () {
     const fisso = document.getElementById("campo-fisso").checked;
     const descrizione = document.getElementById("campo-descrizione").value.trim();
     const tipo = document.getElementById("campo-tipo").value;
-    const categoria = document.getElementById("campo-categoria").value.trim();
-    const sottocategoria = document.getElementById("campo-sottocategoria").value.trim();
+    const categoria = leggiValoreConAggiunta("categoria");
+    const sottocategoria = leggiValoreConAggiunta("sottocategoria");
     const importoTesto = document.getElementById("campo-importo").value;
     const data = document.getElementById("campo-data").value;
     const haCompetenza = document.getElementById("campo-toggle-competenza").checked;
