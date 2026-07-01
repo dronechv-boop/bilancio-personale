@@ -171,6 +171,8 @@ const Grafici = (function () {
         }]
       },
       options: {
+        responsive: false,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         animation: false
       }
