@@ -7,6 +7,7 @@ const App = (function () {
     await attendiChartJsPronta();
     FormVoce.inizializza(document.getElementById("form-voce-mensile-contenitore"));
     collegaEventiGlobali();
+    gestisciTastiera();
     await ricaricaTuttoERidisegna();
   }
 
@@ -36,6 +37,28 @@ const App = (function () {
     });
   }
 
+  /**
+   * Nasconde la tab bar in basso quando la tastiera del dispositivo è
+   * aperta, usando l'API visualViewport per rilevare la riduzione di
+   * altezza visibile della pagina. Se il browser non supporta questa
+   * API, la tab bar resta semplicemente sempre visibile (comportamento
+   * precedente, nessun peggioramento).
+   */
+  function gestisciTastiera() {
+    if (!window.visualViewport) return;
+    const tabBar = document.querySelector(".tab-bar");
+    if (!tabBar) return;
+    const sogliaPixel = 150; // differenza di altezza che indica tastiera aperta
+
+    function aggiorna() {
+      const differenza = window.innerHeight - window.visualViewport.height;
+      tabBar.classList.toggle("tastiera-aperta", differenza > sogliaPixel);
+    }
+
+    window.visualViewport.addEventListener("resize", aggiorna);
+    window.visualViewport.addEventListener("scroll", aggiorna);
+  }
+
   async function ricaricaTuttoERidisegna() {
     mostraCaricamento(true);
     try {
@@ -45,6 +68,7 @@ const App = (function () {
       ]);
       Stato.impostaRighe(datiRisposta.righe);
       Stato.impostaMeta(metaRisposta);
+      Grafici.aggiornaMappaColori();
       ridisegnaVistaAttiva();
     } catch (err) {
       mostraErroreCaricamento(err.message);
@@ -203,7 +227,9 @@ const App = (function () {
   function creaHtmlRigaMovimento(r) {
     const classeValore = r.tipo === "Entrata" ? "positivo" : "negativo";
     const badgeCompetenza = r.dataCompetenza
-      ? '<span class="badge-competenza">📅 → ' + DateUtil.nomeMese(DateUtil.scomponi(r.dataCompetenza).mese, true) + " " + DateUtil.scomponi(r.dataCompetenza).anno + "</span>"
+      ? '<span class="badge-competenza">→ ' + DateUtil.scomponi(r.dataCompetenza).giorno + " " +
+        DateUtil.nomeMese(DateUtil.scomponi(r.dataCompetenza).mese, true) + " " +
+        DateUtil.scomponi(r.dataCompetenza).anno + "</span>"
       : "";
 
     return `
