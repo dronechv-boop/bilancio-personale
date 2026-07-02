@@ -18,6 +18,7 @@ const FILE_DA_PRECACHEARE = [
   "./importo-util.js",
   "./stato.js",
   "./grafici.js",
+  "./statistiche.js",
   "./form-voce.js",
   "./app.js",
   "./auth.js",
