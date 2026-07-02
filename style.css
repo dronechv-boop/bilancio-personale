@@ -14,6 +14,7 @@
   --spesa: #D64545;
   --competenza: #E0A030;
   --ombra: rgba(20, 30, 45, 0.08);
+  --altezza-tab-bar: 44px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,7 +44,7 @@
 }
 
 html, body {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -51,7 +52,6 @@ body {
   background: var(--sfondo);
   color: var(--testo-principale);
   line-height: 1.4;
-  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0)); /* spazio per la tab bar fissa */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -110,23 +110,23 @@ select:focus-visible,
   top: 0;
   z-index: 50;
   background: var(--sfondo);
-  margin: 0 -16px 16px;
-  padding: calc(12px + env(safe-area-inset-top, 0)) 16px 10px;
+  margin: 0 -16px 12px;
+  padding: calc(8px + env(safe-area-inset-top, 0)) 16px 8px;
   box-shadow: 0 2px 6px var(--ombra);
 }
 
 .header h1 {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--testo-principale);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .selettore-anno {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .selettore-anno select {
@@ -148,7 +148,7 @@ select:focus-visible,
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   scrollbar-width: none;
 }
 
@@ -523,19 +523,19 @@ select:focus-visible,
   flex: 1;
   background: none;
   border: none;
-  padding: 7px 0 6px;
+  padding: 5px 0 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   color: var(--testo-secondario);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
 }
 
 .tab-bar-btn .icona-tab {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .tab-bar-btn .icona-tab svg {
@@ -700,6 +700,10 @@ select:focus-visible,
 /* ============================================================
    UTILITY
    ============================================================ */
+
+.spazio-tab-bar {
+  height: calc(var(--altezza-tab-bar) + env(safe-area-inset-bottom, 0));
+}
 
 .nascosto {
   display: none !important;
