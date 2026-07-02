@@ -89,6 +89,41 @@
     <div class="schede-mensili" id="schede-mensili"></div>
   </div>
 
+  <!-- ============================================================
+       VISTA STATISTICHE
+       ============================================================ -->
+  <div class="vista" id="vista-statistiche">
+    <div class="header">
+      <h1>Statistiche</h1>
+    </div>
+
+    <div class="blocco-statistiche">
+      <div class="statistiche-sezione-header">
+        <h2>Spese per categoria</h2>
+        <select id="select-anno-statistiche"></select>
+      </div>
+      <div class="elenco-categorie-statistiche" id="elenco-categorie-spese"></div>
+    </div>
+
+    <div class="blocco-statistiche">
+      <div class="statistiche-sezione-header">
+        <h2>Entrate per categoria</h2>
+      </div>
+      <div class="elenco-categorie-statistiche" id="elenco-categorie-entrate"></div>
+    </div>
+
+    <div class="blocco-statistiche">
+      <h2>Confronto periodi</h2>
+      <p class="statistiche-nota">Scegli due o più periodi dello stesso tipo (mesi o anni) da confrontare.</p>
+      <div class="confronto-tipo-toggle">
+        <button type="button" class="toggle-tipo-periodo attivo" id="btn-tipo-mese">Mesi</button>
+        <button type="button" class="toggle-tipo-periodo" id="btn-tipo-anno">Anni</button>
+      </div>
+      <div class="pillole-mese selettore-periodi-confronto" id="selettore-periodi-confronto"></div>
+      <div class="risultato-confronto" id="risultato-confronto"></div>
+    </div>
+  </div>
+
   <!-- Spazio vuoto in fondo, alto quanto la tab bar fissa, così l'ultimo
        elemento della lista/schede resta sempre raggiungibile scorrendo -->
   <div class="spazio-tab-bar" aria-hidden="true"></div>
@@ -117,6 +152,15 @@
       </span>
       <span>Annuale</span>
     </button>
+    <button class="tab-bar-btn" id="btn-tab-statistiche">
+      <span class="icona-tab" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 17 9 11 13 15 21 7"></polyline>
+          <polyline points="14 7 21 7 21 14"></polyline>
+        </svg>
+      </span>
+      <span>Statistiche</span>
+    </button>
   </div>
 
 </div>
@@ -128,6 +172,7 @@
 <script src="importo-util.js"></script>
 <script src="stato.js"></script>
 <script src="grafici.js"></script>
+<script src="statistiche.js"></script>
 <script src="form-voce.js"></script>
 <script src="app.js"></script>
 <script src="auth.js"></script>
