@@ -175,6 +175,67 @@ const Stato = (function () {
     });
   }
 
+  /**
+   * Come righeFiltrate, ma pensata per la vista Statistiche: se anno è
+   * null/undefined, ritorna tutte le righe di tutti gli anni ("Tutti
+   * gli anni"); altrimenti filtra solo per quell'anno (tutti i mesi).
+   */
+  function righePerAnnoOTutti(anno) {
+    if (anno === null || anno === undefined || anno === "") return tutteLeRighe.slice();
+    return righeFiltrate(anno, null);
+  }
+
+  /**
+   * Ritorna la ripartizione per categoria (con sottocategorie) di un
+   * dato Tipo ("Spesa" o "Entrata"), per l'anno indicato (o tutti gli
+   * anni se null). Categorie e sottocategorie ordinate per totale
+   * decrescente. Usata dalla vista Statistiche.
+   */
+  function getRipartizionePerCategoria(anno, tipo) {
+    const righe = righePerAnnoOTutti(anno).filter(function (r) { return r.tipo === tipo; });
+
+    const perCategoria = {};
+    righe.forEach(function (r) {
+      if (!perCategoria[r.categoria]) perCategoria[r.categoria] = { totale: 0, sottocategorie: {} };
+      perCategoria[r.categoria].totale += r.importo;
+      if (r.sottocategoria) {
+        perCategoria[r.categoria].sottocategorie[r.sottocategoria] =
+          (perCategoria[r.categoria].sottocategorie[r.sottocategoria] || 0) + r.importo;
+      }
+    });
+
+    return Object.keys(perCategoria)
+      .map(function (categoria) {
+        const sottocategorie = Object.keys(perCategoria[categoria].sottocategorie)
+          .map(function (s) { return { nome: s, totale: perCategoria[categoria].sottocategorie[s] }; })
+          .sort(function (a, b) { return b.totale - a.totale; });
+        return { categoria: categoria, totale: perCategoria[categoria].totale, sottocategorie: sottocategorie };
+      })
+      .sort(function (a, b) { return b.totale - a.totale; });
+  }
+
+  /**
+   * Ritorna tutte le combinazioni anno-mese per cui esiste almeno una
+   * riga di dati, ordinate dalla più recente alla meno recente. Usata
+   * per popolare il selettore periodi nel confronto della vista
+   * Statistiche (modalità "Mesi").
+   */
+  function getMesiDisponibiliConDati() {
+    const chiaviViste = {};
+    const risultato = [];
+    tutteLeRighe.forEach(function (r) {
+      const c = DateUtil.scomponi(r.data);
+      const chiave = c.anno + "-" + c.mese;
+      if (!chiaviViste[chiave]) {
+        chiaviViste[chiave] = true;
+        risultato.push({ anno: c.anno, mese: c.mese });
+      }
+    });
+    return risultato.sort(function (a, b) {
+      return b.anno - a.anno || b.mese - a.mese;
+    });
+  }
+
   return {
     impostaRighe: impostaRighe,
     impostaMeta: impostaMeta,
@@ -188,11 +249,14 @@ const Stato = (function () {
     getAnniDisponibili: getAnniDisponibili,
     getMesiDisponibili: getMesiDisponibili,
     righeFiltrate: righeFiltrate,
+    righePerAnnoOTutti: righePerAnnoOTutti,
     calcolaTotali: calcolaTotali,
     calcolaSpesePerCategoria: calcolaSpesePerCategoria,
     calcolaTotaliPerMese: calcolaTotaliPerMese,
     getCategorieOrdinatePerFrequenza: getCategorieOrdinatePerFrequenza,
     getSottocategoriePerCategoria: getSottocategoriePerCategoria,
+    getRipartizionePerCategoria: getRipartizionePerCategoria,
+    getMesiDisponibiliConDati: getMesiDisponibiliConDati,
     getTutteLeRighe: function () { return tutteLeRighe; }
   };
 })();
