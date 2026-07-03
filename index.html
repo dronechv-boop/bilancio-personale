@@ -124,6 +124,30 @@
     </div>
   </div>
 
+  <!-- ============================================================
+       VISTA FONDO
+       ============================================================ -->
+  <div class="vista" id="vista-fondo">
+    <div class="header">
+      <h1>Fondo</h1>
+    </div>
+
+    <div class="blocco-statistiche">
+      <div class="riepilogo-fondo" id="riepilogo-fondo"></div>
+    </div>
+
+    <div class="blocco-grafico">
+      <h3>Andamento nel tempo</h3>
+      <canvas id="grafico-fondo" width="280" height="240"></canvas>
+      <div class="grafico-vuoto nascosto" id="grafico-fondo-vuoto">Nessun dato ancora registrato.</div>
+    </div>
+
+    <button class="btn-nuova-voce" id="btn-nuova-voce-fondo">+ Nuova voce</button>
+    <div class="form-voce-contenitore nascosto" id="form-fondo-nuovo-contenitore"></div>
+
+    <div class="lista-movimenti" id="lista-fondo"></div>
+  </div>
+
   <!-- Spazio vuoto in fondo, alto quanto la tab bar fissa, così l'ultimo
        elemento della lista/schede resta sempre raggiungibile scorrendo -->
   <div class="spazio-tab-bar" aria-hidden="true"></div>
@@ -161,6 +185,14 @@
       </span>
       <span>Statistiche</span>
     </button>
+    <button class="tab-bar-btn" id="btn-tab-fondo">
+      <span class="icona-tab" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2 14 7 14 9 8 12 18 15 11 17 14 22 14"></polyline>
+        </svg>
+      </span>
+      <span>Fondo</span>
+    </button>
   </div>
 
 </div>
@@ -173,7 +205,9 @@
 <script src="stato.js"></script>
 <script src="grafici.js"></script>
 <script src="statistiche.js"></script>
+<script src="fondo.js"></script>
 <script src="form-voce.js"></script>
+<script src="form-fondo.js"></script>
 <script src="app.js"></script>
 <script src="auth.js"></script>
 
