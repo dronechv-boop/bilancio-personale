@@ -885,6 +885,63 @@ select:focus-visible,
 }
 
 /* ============================================================
+   VISTA FONDO
+   ============================================================ */
+
+.riepilogo-fondo-versato {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--bordo);
+}
+
+.riepilogo-fondo-versato .etichetta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--testo-secondario);
+}
+
+.riepilogo-fondo-blocco {
+  padding: 10px 0;
+}
+
+.riepilogo-fondo-blocco:not(:last-child) {
+  border-bottom: 1px solid var(--bordo);
+}
+
+.riepilogo-fondo-titolo {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--testo-secondario);
+  margin-bottom: 6px;
+}
+
+.riepilogo-fondo-riga-principale {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.riepilogo-fondo-dettaglio {
+  font-size: 12px;
+  color: var(--testo-secondario);
+  margin-top: 2px;
+}
+
+.valore-grande {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--testo-principale);
+}
+
+/* ============================================================
    UTILITY
    ============================================================ */
 
