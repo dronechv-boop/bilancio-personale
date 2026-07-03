@@ -888,6 +888,15 @@ select:focus-visible,
    VISTA FONDO
    ============================================================ */
 
+#anteprima-versato-differenza {
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.toggle-versato-fondo {
+  margin-bottom: 8px;
+}
+
 .riepilogo-fondo-versato {
   display: flex;
   justify-content: space-between;
