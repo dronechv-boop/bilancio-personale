@@ -5,6 +5,7 @@
 const Fondo = (function () {
   let righeFondo = null; // caricate al primo accesso alla vista (lazy)
   let istanzaGrafico = null;
+  let modalitaGrafico = "ultimoAnno"; // "ultimoAnno" | "totale"
 
   // ============================================================
   // CARICAMENTO DATI
@@ -56,6 +57,46 @@ const Fondo = (function () {
     const d = new Date(c.anno, c.mese - 1, c.giorno);
     d.setDate(d.getDate() + Math.round(giorni));
     return DateUtil.formattaComponenti(d.getFullYear(), d.getMonth() + 1, d.getDate());
+  }
+
+  function sottraiGiorni(dataStr, giorni) {
+    const c = DateUtil.scomponi(dataStr);
+    const d = new Date(c.anno, c.mese - 1, c.giorno);
+    d.setDate(d.getDate() - giorni);
+    return DateUtil.formattaComponenti(d.getFullYear(), d.getMonth() + 1, d.getDate());
+  }
+
+  /**
+   * Ritorna le righe da mostrare nel grafico secondo la modalità
+   * scelta: "totale" mostra tutta la storia, "ultimoAnno" mostra solo
+   * gli ultimi 365 giorni rispetto all'ultima rilevazione. Se il
+   * filtro lasciasse meno di 2 punti (poche rilevazioni nell'ultimo
+   * anno), include anche la rilevazione immediatamente precedente,
+   * così la linea ha sempre almeno un confronto.
+   */
+  function getRigheFondoPerGrafico() {
+    if (righeFondo.length === 0) return [];
+    if (modalitaGrafico === "totale") return righeFondo;
+
+    const ultimaData = righeFondo[righeFondo.length - 1].data;
+    const sogliaData = sottraiGiorni(ultimaData, 365);
+    const filtrate = righeFondo.filter(function (r) { return DateUtil.confronta(r.data, sogliaData) >= 0; });
+
+    if (filtrate.length < 2 && righeFondo.length >= 2) {
+      const indicePrecedente = righeFondo.length - filtrate.length - 1;
+      if (indicePrecedente >= 0) return righeFondo.slice(indicePrecedente);
+    }
+    return filtrate;
+  }
+
+  function cambiaModalitaGrafico(modalita) {
+    if (modalita === modalitaGrafico) return;
+    modalitaGrafico = modalita;
+    const btnAnno = document.getElementById("btn-grafico-fondo-anno");
+    const btnTotale = document.getElementById("btn-grafico-fondo-totale");
+    if (btnAnno) btnAnno.classList.toggle("attivo", modalita === "ultimoAnno");
+    if (btnTotale) btnTotale.classList.toggle("attivo", modalita === "totale");
+    renderizzaGrafico();
   }
 
   /**
@@ -241,10 +282,11 @@ const Fondo = (function () {
     canvas.classList.remove("nascosto");
     if (contenitoreVuoto) contenitoreVuoto.classList.add("nascosto");
 
-    const dataBase = righeFondo[0].data;
-    const puntiVersato = righeFondo.map(function (r) { return { x: calcolaGiorniDa(dataBase, r.data), y: r.versato }; });
-    const puntiValore = righeFondo.map(function (r) { return { x: calcolaGiorniDa(dataBase, r.data), y: r.valore }; });
-    const puntiControvalore = righeFondo.map(function (r) { return { x: calcolaGiorniDa(dataBase, r.data), y: r.controvalore }; });
+    const righeGrafico = getRigheFondoPerGrafico();
+    const dataBase = righeGrafico[0].data;
+    const puntiVersato = righeGrafico.map(function (r) { return { x: calcolaGiorniDa(dataBase, r.data), y: r.versato }; });
+    const puntiValore = righeGrafico.map(function (r) { return { x: calcolaGiorniDa(dataBase, r.data), y: r.valore }; });
+    const puntiControvalore = righeGrafico.map(function (r) { return { x: calcolaGiorniDa(dataBase, r.data), y: r.controvalore }; });
 
     const minX = puntiValore[0].x;
     const maxX = puntiValore[puntiValore.length - 1].x;
@@ -253,17 +295,17 @@ const Fondo = (function () {
       {
         label: "Versato", data: puntiVersato,
         borderColor: leggiVariabileCss("--testo-secondario"), backgroundColor: leggiVariabileCss("--testo-secondario"),
-        borderDash: [4, 4], pointRadius: 2, borderWidth: 2, tension: 0
+        borderDash: [4, 4], pointRadius: 1.5, borderWidth: 2, tension: 0
       },
       {
         label: "Valore", data: puntiValore,
         borderColor: leggiVariabileCss("--accento"), backgroundColor: leggiVariabileCss("--accento"),
-        pointRadius: 3, borderWidth: 2, tension: 0
+        pointRadius: 1.5, borderWidth: 2, tension: 0
       },
       {
         label: "Controvalore", data: puntiControvalore,
         borderColor: leggiVariabileCss("--competenza"), backgroundColor: leggiVariabileCss("--competenza"),
-        pointRadius: 3, borderWidth: 2, tension: 0
+        pointRadius: 1.5, borderWidth: 2, tension: 0
       }
     ];
 
@@ -309,6 +351,7 @@ const Fondo = (function () {
             grid: { display: false }
           },
           y: {
+            min: modalitaGrafico === "totale" ? 0 : undefined,
             ticks: { color: leggiVariabileCss("--testo-secondario") },
             grid: { color: "rgba(128,128,128,0.15)" }
           }
@@ -410,18 +453,24 @@ const Fondo = (function () {
 
   function collegaEventiControlli() {
     const btnNuovo = document.getElementById("btn-nuova-voce-fondo");
-    if (!btnNuovo) return;
-    btnNuovo.addEventListener("click", function () {
-      const contenitore = document.getElementById("form-fondo-nuovo-contenitore");
-      const giaAperto = contenitore.classList.contains("aperto");
-      chiudiTuttiIFormRigaFondo();
-      if (!giaAperto) {
-        FormFondo.inizializza(contenitore);
-        contenitore.classList.remove("nascosto");
-        const ultimoVersato = righeFondo && righeFondo.length > 0 ? righeFondo[righeFondo.length - 1].versato : undefined;
-        FormFondo.apriPerNuovaVoce(ultimoVersato);
-      }
-    });
+    if (btnNuovo) {
+      btnNuovo.addEventListener("click", function () {
+        const contenitore = document.getElementById("form-fondo-nuovo-contenitore");
+        const giaAperto = contenitore.classList.contains("aperto");
+        chiudiTuttiIFormRigaFondo();
+        if (!giaAperto) {
+          FormFondo.inizializza(contenitore);
+          contenitore.classList.remove("nascosto");
+          const ultimoVersato = righeFondo && righeFondo.length > 0 ? righeFondo[righeFondo.length - 1].versato : undefined;
+          FormFondo.apriPerNuovaVoce(ultimoVersato);
+        }
+      });
+    }
+
+    const btnAnno = document.getElementById("btn-grafico-fondo-anno");
+    const btnTotale = document.getElementById("btn-grafico-fondo-totale");
+    if (btnAnno) btnAnno.addEventListener("click", function () { cambiaModalitaGrafico("ultimoAnno"); });
+    if (btnTotale) btnTotale.addEventListener("click", function () { cambiaModalitaGrafico("totale"); });
   }
 
   return {
