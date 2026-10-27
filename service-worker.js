@@ -7,7 +7,7 @@
 // Google Sheet. Serve solo a soddisfare il requisito tecnico che i
 // browser richiedono per permettere "Aggiungi a Home" come vera app.
 
-const NOME_CACHE = "bilancio-v1";
+const NOME_CACHE = "bilancio-v2";
 
 const FILE_DA_PRECACHEARE = [
   "./index.html",
@@ -19,9 +19,7 @@ const FILE_DA_PRECACHEARE = [
   "./stato.js",
   "./grafici.js",
   "./statistiche.js",
-  "./fondo.js",
   "./form-voce.js",
-  "./form-fondo.js",
   "./app.js",
   "./auth.js",
   "./manifest.json"
