@@ -42,7 +42,7 @@ const Auth = (function () {
     console.log("[AUTH] Email verificata:", emailVerificata, "- corrisponde:", emailCorrisponde);
 
     if (emailVerificata && emailCorrisponde) {
-      sessionStorage.setItem(CHIAVE_SESSIONE, "true");
+      localStorage.setItem(CHIAVE_SESSIONE, "true");
       console.log("[AUTH] Chiamo mostraApp()");
       mostraApp();
     } else {
@@ -101,7 +101,7 @@ const Auth = (function () {
   }
 
   function eraGiaAutenticato() {
-    return sessionStorage.getItem(CHIAVE_SESSIONE) === "true";
+    return localStorage.getItem(CHIAVE_SESSIONE) === "true";
   }
 
   function inizializza() {
