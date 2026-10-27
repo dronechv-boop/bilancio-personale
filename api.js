@@ -52,18 +52,6 @@ const Api = (function () {
     },
     deleteEntry: function (id) {
       return chiamaPost("deleteEntry", { id: id });
-    },
-    getFondoDati: function () {
-      return chiamaGet("getFondoDati");
-    },
-    addFondoEntry: function (voce) {
-      return chiamaPost("addFondoEntry", voce);
-    },
-    updateFondoEntry: function (voce) {
-      return chiamaPost("updateFondoEntry", voce);
-    },
-    deleteFondoEntry: function (id) {
-      return chiamaPost("deleteFondoEntry", { id: id });
     }
   };
 })();
