@@ -100,9 +100,6 @@ const App = (function () {
     document.getElementById("btn-tab-statistiche").addEventListener("click", function () {
       cambiaVista("statistiche");
     });
-    document.getElementById("btn-tab-fondo").addEventListener("click", function () {
-      cambiaVista("fondo");
-    });
 
     document.getElementById("select-anno-mensile").addEventListener("change", function (e) {
       Stato.setAnnoSelezionato(parseInt(e.target.value, 10));
@@ -124,7 +121,6 @@ const App = (function () {
     });
 
     Statistiche.collegaEventiControlli();
-    Fondo.collegaEventiControlli();
   }
 
   function cambiaVista(vista) {
@@ -132,11 +128,9 @@ const App = (function () {
     document.getElementById("vista-mensile").classList.toggle("attiva", vista === "mensile");
     document.getElementById("vista-annuale").classList.toggle("attiva", vista === "annuale");
     document.getElementById("vista-statistiche").classList.toggle("attiva", vista === "statistiche");
-    document.getElementById("vista-fondo").classList.toggle("attiva", vista === "fondo");
     document.getElementById("btn-tab-mensile").classList.toggle("attivo", vista === "mensile");
     document.getElementById("btn-tab-annuale").classList.toggle("attivo", vista === "annuale");
     document.getElementById("btn-tab-statistiche").classList.toggle("attivo", vista === "statistiche");
-    document.getElementById("btn-tab-fondo").classList.toggle("attivo", vista === "fondo");
     ridisegnaVistaAttiva();
   }
 
@@ -146,10 +140,8 @@ const App = (function () {
       renderizzaVistaMensile();
     } else if (vista === "annuale") {
       renderizzaVistaAnnuale();
-    } else if (vista === "statistiche") {
-      Statistiche.render();
     } else {
-      Fondo.render();
+      Statistiche.render();
     }
   }
 
